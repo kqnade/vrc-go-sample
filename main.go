@@ -9,7 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/kqnade/vrc-go/vrchat"
+	"github.com/kqnade/vrcgo/shared"
+	"github.com/kqnade/vrcgo/vrcapi"
 	"golang.org/x/term"
 )
 
@@ -18,7 +19,7 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 
 	// VRChatクライアントを作成
-	client, err := vrchat.NewClient()
+	client, err := vrcapi.NewClient()
 	if err != nil {
 		log.Fatalf("クライアント作成エラー: %v", err)
 	}
@@ -31,17 +32,20 @@ func main() {
 		response = strings.TrimSpace(response)
 
 		if strings.ToLower(response) == "y" {
-			fmt.Println("\nクッキーで認証中...")
+			fmt.Println()
+			fmt.Println("クッキーで認証中...")
 			if err := client.LoadCookies("cookies.json"); err != nil {
 				fmt.Printf("⚠ クッキーの読み込みに失敗: %v\n", err)
-				fmt.Println("手動でログインしてください\n")
+				fmt.Println("手動でログインしてください")
+				fmt.Println()
 				performManualLogin(ctx, reader, client)
 			} else {
 				// クッキーが有効か確認
 				_, err := client.GetCurrentUser(ctx)
 				if err != nil {
 					fmt.Printf("⚠ クッキーが無効です: %v\n", err)
-					fmt.Println("手動でログインしてください\n")
+					fmt.Println("手動でログインしてください")
+					fmt.Println()
 					performManualLogin(ctx, reader, client)
 				} else {
 					fmt.Println("✓ クッキーでのログインに成功しました")
@@ -53,7 +57,8 @@ func main() {
 		}
 	} else {
 		fmt.Println("cookies.jsonが見つかりません")
-		fmt.Println("手動でログインしてください\n")
+		fmt.Println("手動でログインしてください")
+		fmt.Println()
 		performManualLogin(ctx, reader, client)
 	}
 
@@ -80,7 +85,7 @@ func main() {
 	}
 }
 
-func performManualLogin(ctx context.Context, reader *bufio.Reader, client *vrchat.Client) {
+func performManualLogin(ctx context.Context, reader *bufio.Reader, client *vrcapi.Client) {
 	// ユーザー名の入力
 	fmt.Print("ユーザー名: ")
 	username, err := reader.ReadString('\n')
@@ -99,8 +104,9 @@ func performManualLogin(ctx context.Context, reader *bufio.Reader, client *vrcha
 	fmt.Println() // 改行
 
 	// ログイン試行（まず2FAなしで）
-	fmt.Println("\nログイン中...")
-	authConfig := vrchat.AuthConfig{
+	fmt.Println()
+	fmt.Println("ログイン中...")
+	authConfig := shared.AuthConfig{
 		Username: username,
 		Password: password,
 	}
